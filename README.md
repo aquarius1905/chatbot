@@ -93,4 +93,3 @@ SQLite のデータは Docker Volume (`sqlite-data`) に保存されるため、
 # データを完全リセットする場合
 docker compose down -v
 ```
-# chatbot

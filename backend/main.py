@@ -1,0 +1,120 @@
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+from datetime import datetime
+
+from database import get_db, engine
+import models
+import schemas
+
+load_dotenv()
+
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="ChatBot API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
+@app.post("/conversations", response_model=schemas.ConversationOut)
+def create_conversation(db: Session = Depends(get_db)):
+    conv = models.Conversation(title="New Chat", created_at=datetime.utcnow())
+    db.add(conv)
+    db.commit()
+    db.refresh(conv)
+    return conv
+
+
+@app.get("/conversations", response_model=list[schemas.ConversationOut])
+def list_conversations(db: Session = Depends(get_db)):
+    return db.query(models.Conversation).order_by(models.Conversation.created_at.desc()).all()
+
+
+@app.get("/conversations/{conv_id}/messages", response_model=list[schemas.MessageOut])
+def get_messages(conv_id: int, db: Session = Depends(get_db)):
+    conv = db.query(models.Conversation).filter(models.Conversation.id == conv_id).first()
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conv.messages
+
+
+@app.post("/conversations/{conv_id}/messages", response_model=schemas.MessageOut)
+def send_message(conv_id: int, body: schemas.MessageIn, db: Session = Depends(get_db)):
+    conv = db.query(models.Conversation).filter(models.Conversation.id == conv_id).first()
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Save user message
+    user_msg = models.Message(
+        conversation_id=conv_id,
+        role="user",
+        content=body.content,
+        created_at=datetime.utcnow(),
+    )
+    db.add(user_msg)
+    db.commit()
+
+    # Update conversation title from first message
+    if len(conv.messages) == 1:
+        conv.title = body.content[:40] + ("..." if len(body.content) > 40 else "")
+        db.commit()
+
+    # Build history for OpenAI
+    history = [
+        {"role": m.role, "content": m.content}
+        for m in conv.messages
+    ]
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "system", "content": "You are a helpful assistant."}] + history,
+        )
+        ai_content = response.choices[0].message.content
+    except Exception as e:
+        # openai-python の例外（例: APIStatusError）は status_code を持つことがある
+        status_code = getattr(e, "status_code", None)
+        if status_code is None:
+            status_code = getattr(getattr(e, "response", None), "status_code", None)
+
+        if not isinstance(status_code, int):
+            status_code = 502
+
+        raise HTTPException(status_code=status_code, detail=f"OpenAI error: {str(e)}")
+
+    ai_msg = models.Message(
+        conversation_id=conv_id,
+        role="assistant",
+        content=ai_content,
+        created_at=datetime.utcnow(),
+    )
+    db.add(ai_msg)
+    db.commit()
+    db.refresh(ai_msg)
+
+    return ai_msg
+
+
+@app.delete("/conversations/{conv_id}")
+def delete_conversation(conv_id: int, db: Session = Depends(get_db)):
+    conv = db.query(models.Conversation).filter(models.Conversation.id == conv_id).first()
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    db.delete(conv)
+    db.commit()
+    return {"ok": True}
