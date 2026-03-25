@@ -1,10 +1,17 @@
-from fastapi import FastAPI, HTTPException, Depends
+"""ChatBot API の FastAPI アプリケーション。"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from openai import OpenAI
 import os
-from dotenv import load_dotenv
 from datetime import datetime
+
+from openai import OpenAI
+from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 
 from database import get_db, engine
 import models
@@ -27,12 +34,14 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 @app.get("/health")
-def health_check():
+def health_check() -> dict[str, str]:
+    """デプロイ/オーケストレーションツール向けのヘルスチェック。"""
     return {"status": "ok"}
 
 
 @app.post("/conversations", response_model=schemas.ConversationOut)
-def create_conversation(db: Session = Depends(get_db)):
+def create_conversation(db: Session = Depends(get_db)) -> schemas.ConversationOut:
+    """新しい会話を作成します。"""
     conv = models.Conversation(title="New Chat", created_at=datetime.utcnow())
     db.add(conv)
     db.commit()
@@ -41,12 +50,18 @@ def create_conversation(db: Session = Depends(get_db)):
 
 
 @app.get("/conversations", response_model=list[schemas.ConversationOut])
-def list_conversations(db: Session = Depends(get_db)):
+def list_conversations(
+    db: Session = Depends(get_db),
+) -> list[schemas.ConversationOut]:
+    """会話を新しい順に一覧表示します。"""
     return db.query(models.Conversation).order_by(models.Conversation.created_at.desc()).all()
 
 
 @app.get("/conversations/{conv_id}/messages", response_model=list[schemas.MessageOut])
-def get_messages(conv_id: int, db: Session = Depends(get_db)):
+def get_messages(
+    conv_id: int, db: Session = Depends(get_db)
+) -> list[schemas.MessageOut]:
+    """指定した会話のメッセージ一覧を取得します。"""
     conv = db.query(models.Conversation).filter(models.Conversation.id == conv_id).first()
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -54,7 +69,10 @@ def get_messages(conv_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/conversations/{conv_id}/messages", response_model=schemas.MessageOut)
-def send_message(conv_id: int, body: schemas.MessageIn, db: Session = Depends(get_db)):
+def send_message(
+    conv_id: int, body: schemas.MessageIn, db: Session = Depends(get_db)
+) -> schemas.MessageOut:
+    """ユーザーメッセージを保存し、OpenAI を呼び出して回答を保存・返却します。"""
     conv = db.query(models.Conversation).filter(models.Conversation.id == conv_id).first()
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -75,13 +93,13 @@ def send_message(conv_id: int, body: schemas.MessageIn, db: Session = Depends(ge
         db.commit()
 
     # Build history for OpenAI
-    history = [
+    history: list[dict[str, str]] = [
         {"role": m.role, "content": m.content}
         for m in conv.messages
     ]
 
     try:
-        response = client.chat.completions.create(
+        response: Any = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "system", "content": "You are a helpful assistant."}] + history,
         )
@@ -111,7 +129,10 @@ def send_message(conv_id: int, body: schemas.MessageIn, db: Session = Depends(ge
 
 
 @app.delete("/conversations/{conv_id}")
-def delete_conversation(conv_id: int, db: Session = Depends(get_db)):
+def delete_conversation(
+    conv_id: int, db: Session = Depends(get_db)
+) -> dict[str, bool]:
+    """会話とそのメッセージを削除します。"""
     conv = db.query(models.Conversation).filter(models.Conversation.id == conv_id).first()
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")

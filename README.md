@@ -11,30 +11,7 @@
 | LLM | OpenAI GPT-4o-mini |
 
 ## ディレクトリ構成
-
-```
-chatbot/
-├── docker-compose.yml
-├── .env.example
-├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── main.py        # FastAPI ルーター
-│   ├── models.py      # SQLAlchemy モデル
-│   ├── schemas.py     # Pydantic スキーマ
-│   └── database.py    # DB セッション管理
-└── frontend/
-    ├── Dockerfile
-    ├── nginx.conf
-    ├── package.json
-    ├── vite.config.ts
-    └── src/
-        ├── main.tsx
-        ├── App.tsx
-        ├── App.css
-        ├── index.css
-        └── api.ts     # バックエンドとの通信
-```
+`backend/`（FastAPI）と `frontend/`（React）で構成されています。詳細なファイル一覧は割愛しています。
 
 ## セットアップ
 
