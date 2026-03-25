@@ -60,7 +60,7 @@ function MessageItem({ msg }: MessageItemProps) {
   const isUser = msg.role === 'user'
   return (
     <div className={`msg-row ${isUser ? 'user' : 'ai'}`}>
-      <div className="msg-avatar">{isUser ? '你' : '◈'}</div>
+      <div className="msg-avatar">{isUser ? 'You' : '◈'}</div>
       <div className="msg-bubble">
         <pre className="msg-content">{msg.content}</pre>
         <span className="msg-time">
