@@ -165,7 +165,7 @@
 }
 .welcome-btn:hover {
   background: var(--accent);
-  color: #fff;
+  color: var(--text);
   box-shadow: 0 0 24px var(--accent-glow);
 }
 
@@ -244,7 +244,7 @@
   background: var(--user-bubble);
   border-color: var(--accent);
   border-radius: var(--radius) 0 var(--radius) var(--radius);
-  color: #c5c0ff;
+  color: var(--text);
 }
 
 .msg-time {
@@ -331,7 +331,7 @@
   border-radius: 50%;
   border: none;
   background: var(--accent);
-  color: #fff;
+  color: var(--text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -353,8 +353,8 @@
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
+  border: 2px solid rgba(234, 243, 255, 0.3);
+  border-top-color: var(--text);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }

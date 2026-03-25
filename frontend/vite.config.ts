@@ -6,7 +6,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        // Docker 環境では `localhost` はこのコンテナ自身を指します。
+        // `docker-compose` のサービス名 `backend` に向けます。
+        target: 'http://backend:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
