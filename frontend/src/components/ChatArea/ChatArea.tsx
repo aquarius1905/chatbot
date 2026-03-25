@@ -1,7 +1,6 @@
-import { useRef } from 'react'
 import type { Message } from '../../types'
-import { MessageItem } from '../MessageItem/MessageItem.tsx'
-import { TypingIndicator } from '../TypingIndicator/TypingIndicator.tsx'
+import { MessageItem } from '../MessageItem/MessageItem'
+import { TypingIndicator } from '../TypingIndicator/TypingIndicator'
 import './ChatArea.css'
 
 interface Props {
@@ -13,8 +12,8 @@ interface Props {
   onInputChange: (value: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
   onSend: () => void
-  bottomRef: React.RefObject<HTMLDivElement | null>
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>
+  bottomRef: React.RefObject<HTMLDivElement>
+  textareaRef: React.RefObject<HTMLTextAreaElement>
 }
 
 export function ChatArea({

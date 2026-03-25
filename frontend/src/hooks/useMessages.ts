@@ -8,8 +8,8 @@ interface UseMessagesReturn {
   sending: boolean
   error: string | null
   enterArmed: boolean
-  bottomRef: React.RefObject<HTMLDivElement | null>
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>
+  bottomRef: React.RefObject<HTMLDivElement>
+  textareaRef: React.RefObject<HTMLTextAreaElement>
   loadMessages: (convId: number) => Promise<void>
   clearMessages: () => void
   handleInputChange: (value: string) => void
@@ -25,8 +25,8 @@ export function useMessages(): UseMessagesReturn {
   const [error, setError] = useState<string | null>(null)
   const [enterArmed, setEnterArmed] = useState(false)
 
-  const bottomRef = useRef<HTMLDivElement | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // スクロールを最下部に保つ
   useEffect(() => {
