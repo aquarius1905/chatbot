@@ -94,12 +94,21 @@ export default function App() {
   const [activeId, setActiveId] = useState<number | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState<string>('')
+  // Enter を 1回目で「確定」状態にして、2回目で送信するためのフラグ
+  const [enterArmed, setEnterArmed] = useState<boolean>(false)
   const [sending, setSending] = useState<boolean>(false)
   const [loadingConvs, setLoadingConvs] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (!enterArmed) return
+    // Enter 1回目の後、しばらく経つと「確定」が解除されるようにする
+    const t = window.setTimeout(() => setEnterArmed(false), 3000)
+    return () => window.clearTimeout(t)
+  }, [enterArmed])
 
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -123,6 +132,7 @@ export default function App() {
   const selectConversation = useCallback(async (id: number) => {
     setActiveId(id)
     setMessages([])
+    setEnterArmed(false)
     setError(null)
     try {
       const msgs = await api.getMessages(id)
@@ -138,6 +148,7 @@ export default function App() {
       setConversations((prev) => [conv, ...prev])
       setActiveId(conv.id)
       setMessages([])
+      setEnterArmed(false)
       setError(null)
       textareaRef.current?.focus()
     } catch {
@@ -160,6 +171,7 @@ export default function App() {
 
   const sendMessage = useCallback(async () => {
     if (!input.trim() || activeId === null || sending) return
+    setEnterArmed(false)
     const content = input.trim()
     setInput('')
     setSending(true)
@@ -196,10 +208,21 @@ export default function App() {
   }, [input, activeId, sending])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key !== 'Enter') return
+
+    // Enter (1回目=確定/送信しない, 2回目=送信)
+    if (!e.shiftKey) {
       e.preventDefault()
-      void sendMessage()
+      if (enterArmed) {
+        void sendMessage()
+      } else {
+        setEnterArmed(true)
+      }
+      return
     }
+
+    // Shift+Enter は改行（確定状態を解除）
+    setEnterArmed(false)
   }
 
   return (
@@ -243,11 +266,14 @@ export default function App() {
             <div className="input-area">
               <textarea
                 ref={textareaRef}
-                className="input-box"
+                className={`input-box ${enterArmed ? 'enter-armed' : ''}`}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setEnterArmed(false)
+                  setInput(e.target.value)
+                }}
                 onKeyDown={handleKeyDown}
-                placeholder="メッセージを入力… (Shift+Enter で改行)"
+                placeholder="メッセージを入力… (Enter 1回目で確定 / 2回目で送信 / Shift+Enter で改行)"
                 rows={1}
                 disabled={sending}
               />

@@ -325,6 +325,11 @@
   box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
+.input-box.enter-armed {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
 .send-btn {
   width: 44px;
   height: 44px;
