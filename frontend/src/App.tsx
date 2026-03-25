@@ -3,6 +3,18 @@ import { api } from './api'
 import type { Conversation, Message } from './types'
 import './App.css'
 
+const jstTimeFormatter = new Intl.DateTimeFormat('ja-JP', {
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'Asia/Tokyo',
+})
+
+function formatJstTime(iso: string) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return jstTimeFormatter.format(d)
+}
+
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 
 interface SidebarProps {
@@ -64,10 +76,7 @@ function MessageItem({ msg }: MessageItemProps) {
       <div className="msg-bubble">
         <pre className="msg-content">{msg.content}</pre>
         <span className="msg-time">
-          {new Date(msg.created_at).toLocaleTimeString('ja-JP', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+          {formatJstTime(msg.created_at)}
         </span>
       </div>
     </div>
