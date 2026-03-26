@@ -18,8 +18,8 @@
 ### 1. APIキーを設定
 
 ```bash
-cp .env.example .env
-# .env を開いて OPENAI_API_KEY を設定
+cp backend/.env.example backend/.env
+# backend/.env を開いて OPENAI_API_KEY を設定
 ```
 
 ### 2. 起動
@@ -28,7 +28,10 @@ cp .env.example .env
 # 初回（イメージのビルドあり）
 docker compose up --build
 
-# 2回目以降
+# 2回目以降（ビルドなし、起動のみ）
+docker compose up
+
+# バックグラウンドで起動したい場合
 docker compose up -d
 ```
 
