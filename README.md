@@ -25,8 +25,19 @@ cp .env.example .env
 ### 2. 起動
 
 ```bash
+# 初回（イメージのビルドあり）
 docker compose up --build
+
+# 2回目以降
+docker compose up -d
 ```
+
+> **`--build` が再度必要なケース**
+> - `requirements.txt` を変更した（Pythonパッケージの追加・変更）
+> - `package.json` を変更した（npmパッケージの追加・変更）
+> - `Dockerfile` を変更した
+>
+> ソースコード（`.py` / `.tsx` など）の変更はバインドマウントで即反映されるため `--build` 不要です。
 
 ### 3. アクセス
 
