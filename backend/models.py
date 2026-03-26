@@ -2,11 +2,19 @@
 
 from __future__ import annotations
 
+import enum
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
+
+
+class Role(str, enum.Enum):
+    """メッセージの送信者ロール。"""
+
+    USER = "user"
+    ASSISTANT = "assistant"
 
 
 class Conversation(Base):
@@ -18,7 +26,6 @@ class Conversation(Base):
     title: Mapped[str] = mapped_column(String(100), default="New Chat")
     created_at: Mapped[datetime] = mapped_column(DateTime)
 
-    # Note: `created_at` is set at runtime; SQLAlchemy may represent it as `datetime`.
     messages: Mapped[list["Message"]] = relationship(
         "Message",
         back_populates="conversation",
@@ -36,7 +43,7 @@ class Message(Base):
     conversation_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("conversations.id", ondelete="CASCADE")
     )
-    role: Mapped[str] = mapped_column(String(20))  # "user" | "assistant"
+    role: Mapped[Role] = mapped_column(Enum(Role))
     content: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime)
 

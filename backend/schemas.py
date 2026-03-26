@@ -5,6 +5,8 @@ from __future__ import annotations
 from pydantic import BaseModel
 from datetime import datetime
 
+from models import Role
+
 
 class MessageIn(BaseModel):
     """受信するメッセージのペイロード。"""
@@ -16,7 +18,7 @@ class MessageOut(BaseModel):
     """送信するメッセージの表現。"""
 
     id: int
-    role: str
+    role: Role
     content: str
     created_at: datetime
 

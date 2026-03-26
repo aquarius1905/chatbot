@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from database import get_db, engine
 import models
 import schemas
+from models import Role
 
 load_dotenv()
 
@@ -77,24 +78,24 @@ def send_message(
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    # Save user message
+    # ユーザーメッセージを保存
     user_msg = models.Message(
         conversation_id=conv_id,
-        role="user",
+        role=Role.USER,
         content=body.content,
         created_at=datetime.utcnow(),
     )
     db.add(user_msg)
     db.commit()
 
-    # Update conversation title from first message
+    # 最初のメッセージからタイトルを更新
     if len(conv.messages) == 1:
         conv.title = body.content[:40] + ("..." if len(body.content) > 40 else "")
         db.commit()
 
-    # Build history for OpenAI
+    # OpenAI に渡す会話履歴を構築
     history: list[dict[str, str]] = [
-        {"role": m.role, "content": m.content}
+        {"role": m.role.value, "content": m.content}
         for m in conv.messages
     ]
 
@@ -115,9 +116,10 @@ def send_message(
 
         raise HTTPException(status_code=status_code, detail=f"OpenAI error: {str(e)}")
 
+    # AI のメッセージを保存
     ai_msg = models.Message(
         conversation_id=conv_id,
-        role="assistant",
+        role=Role.ASSISTANT,
         content=ai_content,
         created_at=datetime.utcnow(),
     )
