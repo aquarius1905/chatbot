@@ -30,6 +30,9 @@ docker compose up --build -d
 
 # 2回目以降
 docker compose up -d
+
+# 再起動
+docker compose down && docker compose up -d
 ```
 
 > **`--build` が再度必要なケース**
