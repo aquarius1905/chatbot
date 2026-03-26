@@ -26,12 +26,9 @@ cp backend/.env.example backend/.env
 
 ```bash
 # 初回（イメージのビルドあり）
-docker compose up --build
+docker compose up --build -d
 
-# 2回目以降（ビルドなし、起動のみ）
-docker compose up
-
-# バックグラウンドで起動したい場合
+# 2回目以降
 docker compose up -d
 ```
 
@@ -59,22 +56,6 @@ docker compose up -d
 | `GET` | `/conversations/{id}/messages` | メッセージ一覧取得 |
 | `POST` | `/conversations/{id}/messages` | メッセージ送信 |
 | `DELETE` | `/conversations/{id}` | 会話削除 |
-
-## ローカル開発（Docker なし）
-
-**バックエンド:**
-```bash
-cd backend
-pip install -r requirements.txt
-OPENAI_API_KEY=sk-xxx uvicorn main:app --reload
-```
-
-**フロントエンド:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 ## データ永続化
 

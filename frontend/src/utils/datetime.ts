@@ -1,18 +1,24 @@
 /**
  * 日時フォーマットユーティリティ。
  *
- * バックエンドは `datetime.now(timezone.utc)` で生成した UTC 文字列（末尾 `Z` あり）を返す。
- * `timeZone: 'Asia/Tokyo'` を指定することで JST に変換して表示する。
+ * SQLite は UTC で保存するが末尾に `Z` がない文字列で返す。
+ * `new Date()` はタイムゾーン指定のない文字列をローカルタイムとして解釈するため、
+ * 明示的に `Z` を付与して UTC として扱わせる。
  */
 
-const jstTimeFormatter = new Intl.DateTimeFormat('ja-JP', {
+const jstDateTimeFormatter = new Intl.DateTimeFormat('ja-JP', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
   hour: '2-digit',
   minute: '2-digit',
   timeZone: 'Asia/Tokyo',
 })
 
 export function formatJstTime(iso: string): string {
-  const d = new Date(iso)
+  const normalized = iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z'
+  const d = new Date(normalized)
   if (Number.isNaN(d.getTime())) return iso
-  return jstTimeFormatter.format(d)
+  // Intl.DateTimeFormat の ja-JP は "2024/01/01 12:00" 形式で返す
+  return jstDateTimeFormatter.format(d)
 }
