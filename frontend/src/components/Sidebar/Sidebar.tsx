@@ -32,7 +32,7 @@ export function Sidebar({ conversations, activeId, onSelect, onCreate, onDelete,
       <aside className="sidebar">
         <div className="sidebar-header">
           <span className="logo">◈ ChatBot</span>
-          <button className="new-btn" onClick={onCreate} disabled={loading} title="New chat">
+          <button className="new-btn" onClick={onCreate} disabled={loading} title="新しいチャット">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -52,7 +52,7 @@ export function Sidebar({ conversations, activeId, onSelect, onCreate, onDelete,
               <button
                 className="conv-delete"
                 onClick={(e) => handleDeleteClick(e, c)}
-                title="Delete"
+                title="削除"
               >
                 ×
               </button>

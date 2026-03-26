@@ -7,7 +7,7 @@ from typing import Any
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from openai import OpenAI
 from sqlalchemy.orm import Session
@@ -16,7 +16,6 @@ from dotenv import load_dotenv
 from database import get_db, engine
 import models
 import schemas
-from models import Role
 
 load_dotenv()
 
@@ -43,7 +42,7 @@ def health_check() -> dict[str, str]:
 @app.post("/conversations", response_model=schemas.ConversationOut)
 def create_conversation(db: Session = Depends(get_db)) -> schemas.ConversationOut:
     """新しい会話を作成します。"""
-    conv = models.Conversation(title="New Chat", created_at=datetime.utcnow())
+    conv = models.Conversation(title="New Chat", created_at=datetime.now(timezone.utc))
     db.add(conv)
     db.commit()
     db.refresh(conv)
@@ -81,9 +80,9 @@ def send_message(
     # ユーザーメッセージを保存
     user_msg = models.Message(
         conversation_id=conv_id,
-        role=Role.USER,
+        role=models.Role.USER,
         content=body.content,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     db.add(user_msg)
     db.commit()
@@ -119,9 +118,9 @@ def send_message(
     # AI のメッセージを保存
     ai_msg = models.Message(
         conversation_id=conv_id,
-        role=Role.ASSISTANT,
+        role=models.Role.ASSISTANT,
         content=ai_content,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     db.add(ai_msg)
     db.commit()
