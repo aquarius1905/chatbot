@@ -1,17 +1,6 @@
 import type { Message } from '../../types'
+import { formatJstTime } from '../../utils/datetime'
 import './MessageItem.css'
-
-const jstTimeFormatter = new Intl.DateTimeFormat('ja-JP', {
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: 'Asia/Tokyo',
-})
-
-export function formatJstTime(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return jstTimeFormatter.format(d)
-}
 
 interface Props {
   msg: Message
