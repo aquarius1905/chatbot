@@ -52,7 +52,7 @@ export function ChatArea({
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="メッセージを入力… (Enter 1回目で確定 / 2回目で送信 / Shift+Enter で改行)"
+          placeholder="メッセージを入力… (Shift+Enter で改行)"
           rows={1}
           disabled={sending}
         />
