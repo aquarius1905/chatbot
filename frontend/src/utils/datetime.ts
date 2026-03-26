@@ -1,9 +1,8 @@
 /**
  * 日時フォーマットユーティリティ。
  *
- * バックエンドは UTC の datetime 文字列を返すが、末尾に `Z` がない場合がある。
- * `new Date()` はタイムゾーン指定のない文字列をローカルタイムとして解釈するため、
- * 明示的に `Z` を付与して UTC として扱わせる。
+ * バックエンドは `datetime.now(timezone.utc)` で生成した UTC 文字列（末尾 `Z` あり）を返す。
+ * `timeZone: 'Asia/Tokyo'` を指定することで JST に変換して表示する。
  */
 
 const jstTimeFormatter = new Intl.DateTimeFormat('ja-JP', {
@@ -13,8 +12,7 @@ const jstTimeFormatter = new Intl.DateTimeFormat('ja-JP', {
 })
 
 export function formatJstTime(iso: string): string {
-  const normalized = iso.endsWith('Z') ? iso : iso + 'Z'
-  const d = new Date(normalized)
+  const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
   return jstTimeFormatter.format(d)
 }
